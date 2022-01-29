@@ -1,0 +1,13 @@
+Digital.exe
+Digital.jar
+Digital.sh
+Digital_noD3D.exe
+linux/
+docu/
+examples/
+lib/
+*.sh
+*.svg
+ReleaseNotes.txt
+Version.txt
+Windows_Read.me
