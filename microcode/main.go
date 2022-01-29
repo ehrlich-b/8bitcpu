@@ -29,7 +29,11 @@ const (
 	MWr
 	MEn
 	Hlt
+	LdFlags
 	MPCRst
+	PCLdIfEq
+	PCLdIfGorEq
+	PCLdIfZero
 )
 
 const (
@@ -38,25 +42,26 @@ const (
 	pcBits          = 3
 	instructionBits = 5
 	// Determines control width, update if new control lines are added
-	highestLine = MPCRst
+	highestLine = PCLdIfZero
 )
 
 // [X, X, X, I, I, I, I, I]
 // Leading 3 bits reserved for counter
 const (
-	NOP Instruction = 0b00000000
-	LDA Instruction = 0b00000001
-	ADD Instruction = 0b00000010
-	JMP Instruction = 0b00000011
-	STA Instruction = 0b00000100
-	LDI Instruction = 0b00000101
-	SUB Instruction = 0b00000110
-	LDB Instruction = 0b00000111
-	JEQ Instruction = 0b00001000
-	JGE Instruction = 0b00001001
-	JZ  Instruction = 0b00001010
-	OUT Instruction = 0b00011110
-	HLT Instruction = 0b00011111
+	NOP  Instruction = 0b00000000 // No argument, do nothing
+	LDA  Instruction = 0b00000001 // Single argument, load the value from memory address $0 into A
+	LDAi Instruction = 0b00000010 // Single argument, store $0 in A
+	LDB  Instruction = 0b00000011 // Single argument, load the value from memory address $0 into A
+	LDBi Instruction = 0b00000100 // Single argument, store $0 in B
+	STA  Instruction = 0b00000101 // Single argument, store the value from A into memory address $0
+	ADD  Instruction = 0b00000110 // No argument, add A and B, store the result in A
+	SUB  Instruction = 0b00000111 // No argument, subtract A and B, store the result in A
+	JMP  Instruction = 0b00001000 // Single argument, unconditional jump to address $0
+	JZ   Instruction = 0b00001001 // Single argument, jump to address $0 if register A = 0
+	JEQ  Instruction = 0b00001010 // Single argument, jump to address $0 if register A = B
+	JGE  Instruction = 0b00001011 // Single argument, jump to address $0 if register A >= B
+	OUT  Instruction = 0b00011110 // No argument, display the value stored in register A
+	HLT  Instruction = 0b00011111 // No argument, halt the CPU
 )
 
 // These machine instructions get executed for every command
@@ -79,10 +84,40 @@ func main() {
 			{MEn, LdA, PCEnable},
 			{MPCRst},
 		},
-		ADD: {
+		LDAi: {
 			{PCOut, LdMAddr},
+			{MEn, LdA, PCEnable},
+			{MPCRst},
+		},
+		LDB: {
+			{PCOut, LdMAddr},
+			{MEn, LdMAddr},
+			{MEn, LdB, PCEnable},
+			{MPCRst},
+		},
+		LDBi: {
+			{PCOut, LdMAddr},
+			{MEn, LdB, PCEnable},
+			{MPCRst},
+		},
+		ADD: {
+			{ALUOut, LdA},
+			{MPCRst},
+		},
+		SUB: {
+			{ALUOut, Sub, LdA},
+			{MPCRst},
+		},
+		JZ: {
+			{LdFlags, PCOut, LdMAddr},
 			{MEn, LdB},
-			{ALUOut, LdA, PCEnable},
+			{PCLd, PCLdIfZero, EnB, PCEnable},
+			{MPCRst},
+		},
+		JMP: {
+			{LdFlags, PCOut, LdMAddr},
+			{MEn, LdB},
+			{PCLd, EnB},
 			{MPCRst},
 		},
 		OUT: {
