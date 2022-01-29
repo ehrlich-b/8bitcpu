@@ -118,26 +118,22 @@ func main() {
 		},
 		JMP: {
 			{LdFlags, PCOut, LdMAddr},
-			{MEn, LdB},
-			{PCLd, EnB},
+			{PCLd, MEn},
 			{MPCRst},
 		},
 		JZ: {
 			{LdFlags, PCOut, LdMAddr},
-			{MEn, LdB},
-			{PCLd, PCLdIfZero, EnB, PCEnable},
+			{PCLd, PCLdIfZero, MEn, PCEnable},
 			{MPCRst},
 		},
 		JEQ: {
 			{LdFlags, PCOut, LdMAddr},
-			{MEn, LdB},
-			{PCLd, PCLdIfEq, EnB, PCEnable},
+			{PCLd, PCLdIfEq, MEn, PCEnable},
 			{MPCRst},
 		},
 		JGE: {
 			{LdFlags, PCOut, LdMAddr},
-			{MEn, LdB},
-			{PCLd, PCLdIfGorEq, EnB, PCEnable},
+			{PCLd, PCLdIfGorEq, MEn, PCEnable},
 			{MPCRst},
 		},
 		MOVa: {
