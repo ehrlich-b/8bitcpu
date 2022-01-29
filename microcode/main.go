@@ -60,6 +60,8 @@ const (
 	JZ   Instruction = 0b00001001 // Single argument, jump to address $0 if register A = 0
 	JEQ  Instruction = 0b00001010 // Single argument, jump to address $0 if register A = B
 	JGE  Instruction = 0b00001011 // Single argument, jump to address $0 if register A >= B
+	MOVa Instruction = 0b00001100 // No arguments, move B into A
+	MOVb Instruction = 0b00001101 // No arguments, move A into B
 	OUT  Instruction = 0b00011110 // No argument, display the value stored in register A
 	HLT  Instruction = 0b00011111 // No argument, halt the CPU
 )
@@ -100,6 +102,12 @@ func main() {
 			{MEn, LdB, PCEnable},
 			{MPCRst},
 		},
+		STA: {
+			{PCOut, LdMAddr},
+			{MEn, LdMAddr},
+			{EnA, MWr, PCEnable},
+			{MPCRst},
+		},
 		ADD: {
 			{ALUOut, LdA},
 			{MPCRst},
@@ -108,16 +116,36 @@ func main() {
 			{ALUOut, Sub, LdA},
 			{MPCRst},
 		},
+		JMP: {
+			{LdFlags, PCOut, LdMAddr},
+			{MEn, LdB},
+			{PCLd, EnB},
+			{MPCRst},
+		},
 		JZ: {
 			{LdFlags, PCOut, LdMAddr},
 			{MEn, LdB},
 			{PCLd, PCLdIfZero, EnB, PCEnable},
 			{MPCRst},
 		},
-		JMP: {
+		JEQ: {
 			{LdFlags, PCOut, LdMAddr},
 			{MEn, LdB},
-			{PCLd, EnB},
+			{PCLd, PCLdIfEq, EnB, PCEnable},
+			{MPCRst},
+		},
+		JGE: {
+			{LdFlags, PCOut, LdMAddr},
+			{MEn, LdB},
+			{PCLd, PCLdIfGorEq, EnB, PCEnable},
+			{MPCRst},
+		},
+		MOVa: {
+			{LdA, EnB},
+			{MPCRst},
+		},
+		MOVb: {
+			{LdB, EnA},
 			{MPCRst},
 		},
 		OUT: {

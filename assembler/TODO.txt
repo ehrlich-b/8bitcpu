@@ -1,0 +1,2 @@
+* Flatten the iteration of instructions so that the line numbers are actually correct
+* Add comments
