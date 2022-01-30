@@ -30,6 +30,8 @@ const (
 	MEn
 	Hlt
 	LdFlags
+	EnGnd
+	RstDone
 	MPCRst
 	PCLdIfEq
 	PCLdIfGorEq
@@ -62,6 +64,7 @@ const (
 	JGE  Instruction = 0b00001011 // Single argument, jump to address $0 if register A >= B
 	MOVa Instruction = 0b00001100 // No arguments, move B into A
 	MOVb Instruction = 0b00001101 // No arguments, move A into B
+	RST  Instruction = 0b00011101 // Reset the CPU
 	OUT  Instruction = 0b00011110 // No argument, display the value stored in register A
 	HLT  Instruction = 0b00011111 // No argument, halt the CPU
 )
@@ -143,6 +146,10 @@ func main() {
 		MOVb: {
 			{LdB, EnA},
 			{MPCRst},
+		},
+		RST: {
+			{EnGnd, PCLd, LdInst, LdA, LdB, LdOut, LdMAddr},
+			{RstDone},
 		},
 		OUT: {
 			{EnA, LdOut},
