@@ -36,6 +36,11 @@ const (
 	PCLdIfEq
 	PCLdIfGorEq
 	PCLdIfZero
+	StkEn
+	StkLd
+	StkInc
+	StkDec
+	StkRst
 )
 
 const (
@@ -44,7 +49,7 @@ const (
 	pcBits          = 3
 	instructionBits = 5
 	// Determines control width, update if new control lines are added
-	highestLine = PCLdIfZero
+	highestLine = StkRst
 )
 
 // [X, X, X, I, I, I, I, I]

@@ -47,20 +47,6 @@ var instructionMap = map[string]Instruction{
 	"HLT":  HLT,
 }
 
-// Convert these to ints if there's a desire
-// to support more than one argument
-var arguments = map[Instruction]bool{
-	LDA:  true,
-	LDAi: true,
-	LDB:  true,
-	LDBi: true,
-	STA:  true,
-	JMP:  true,
-	JZ:   true,
-	JEQ:  true,
-	JGE:  true,
-}
-
 func main() {
 	//instructions := make([]int8, 0)
 	args := os.Args
@@ -98,71 +84,74 @@ func loadProgram(assemblyFile string) ([]Instruction, error) {
 	return writeInstructions(content, labels)
 }
 
-func writeInstructions(program []string, labels map[string]int8) ([]Instruction, error) {
+func writeInstructions(program [][]string, labels map[string]int8) ([]Instruction, error) {
 	var memoryCounter int8
-	argNext := false
 	instructions := make([]Instruction, 0)
+nextLine:
 	for lineIx, progLine := range program {
-		// Skip labels
-		if strings.HasSuffix(progLine, ":") {
-			continue
-		}
-		// This is an instruction argument
-		if argNext {
-			if strings.HasPrefix(progLine, "$") { // Parse the argument as a literal value
-				number := strings.TrimLeft(progLine, "$")
-				argument, err := strconv.ParseInt(number, 0, 9)
-				if err != nil {
-					return nil, fmt.Errorf("Unable to parse argument %s as int on line %d", progLine, lineIx)
-				}
-				instructions = append(instructions, Instruction(argument))
-			} else { // Otherwise it must be a label
-				if addr, exists := labels[progLine]; exists {
-					instructions = append(instructions, Instruction(addr))
-				} else {
-					return nil, fmt.Errorf("Undefined label '%s' on line %d", progLine, lineIx)
-				}
+		for instrIx, instr := range progLine {
+			// Skip labels
+			if strings.HasSuffix(instr, ":") {
+				continue nextLine
 			}
-			argNext = false
-			continue
-		}
-		if instruction, exists := instructionMap[progLine]; exists {
-			instructions = append(instructions, Instruction(instruction))
-			if val, exists := arguments[instruction]; val && exists {
-				argNext = true
+			// This is an instruction argument
+			if instrIx != 0 {
+				if strings.HasPrefix(instr, "$") { // Parse the argument as a literal value
+					number := strings.TrimLeft(instr, "$")
+					argument, err := strconv.ParseInt(number, 0, 9)
+					if err != nil {
+						return nil, fmt.Errorf("Unable to parse argument %s as int on line %d", instr, lineIx)
+					}
+					instructions = append(instructions, Instruction(argument))
+				} else { // Otherwise it must be a label
+					if addr, exists := labels[instr]; exists {
+						instructions = append(instructions, Instruction(addr))
+					} else {
+						return nil, fmt.Errorf("Undefined label '%s' on line %d", instr, lineIx)
+					}
+				}
+				continue
 			}
-		} else {
-			return nil, fmt.Errorf("Undefined instruction '%s' on line %d", progLine, lineIx)
+			if instruction, exists := instructionMap[instr]; exists {
+				instructions = append(instructions, Instruction(instruction))
+			} else {
+				return nil, fmt.Errorf("Undefined instruction '%s' on line %d", instr, lineIx)
+			}
+			memoryCounter++
 		}
-		memoryCounter++
 	}
 	return instructions, nil
 }
 
-func setupLabels(program []string) (map[string]int8, error) {
+func setupLabels(program [][]string) (map[string]int8, error) {
 	labels := make(map[string]int8, 0)
 	var memoryCounter int8
 	for lineIx, progLine := range program {
-		if strings.HasSuffix(progLine, ":") {
-			label := strings.TrimRight(progLine, ":")
-			if _, exists := labels[label]; exists {
-				return nil, fmt.Errorf("Duplicate label %s at line %d", label, lineIx)
+		for _, instr := range progLine {
+			if strings.HasSuffix(instr, ":") {
+				label := strings.TrimRight(instr, ":")
+				if _, exists := labels[label]; exists {
+					return nil, fmt.Errorf("Duplicate label %s at line %d", label, lineIx)
+				}
+				labels[label] = memoryCounter
+			} else {
+				memoryCounter++
 			}
-			labels[label] = memoryCounter
-		} else {
-			memoryCounter++
 		}
 	}
 
 	return labels, nil
 }
 
-func cleanInput(rawContent string) []string {
+func cleanInput(rawContent string) [][]string {
 	rawLines := strings.Split(rawContent, "\n")
-	cleanInput := make([]string, 0)
+	cleanInput := make([][]string, 0)
 	for _, line := range rawLines {
+		line = strings.Split(line, "//")[0]
 		tokens := strings.Fields(strings.TrimSpace(line))
-		cleanInput = append(cleanInput, tokens...)
+		if len(tokens) > 0 {
+			cleanInput = append(cleanInput, tokens)
+		}
 	}
 	return cleanInput
 }
