@@ -376,10 +376,10 @@
       <elementAttributes>
         <entry>
           <string>Label</string>
-          <string>AZero</string>
+          <string>AEq</string>
         </entry>
       </elementAttributes>
-      <pos x="1220" y="560"/>
+      <pos x="1220" y="660"/>
     </visualElement>
     <visualElement>
       <elementName>Out</elementName>
@@ -396,10 +396,10 @@
       <elementAttributes>
         <entry>
           <string>Label</string>
-          <string>AEq</string>
+          <string>AZero</string>
         </entry>
       </elementAttributes>
-      <pos x="1220" y="660"/>
+      <pos x="1220" y="560"/>
     </visualElement>
   </visualElements>
   <wires>
