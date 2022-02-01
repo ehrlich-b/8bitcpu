@@ -67,8 +67,12 @@ const (
 	JZ   Instruction = 0b00001001 // Single argument, jump to address $0 if register A = 0
 	JEQ  Instruction = 0b00001010 // Single argument, jump to address $0 if register A = B
 	JGE  Instruction = 0b00001011 // Single argument, jump to address $0 if register A >= B
-	MOVa Instruction = 0b00001100 // No arguments, move B into A
-	MOVb Instruction = 0b00001101 // No arguments, move A into B
+	PUSH Instruction = 0b00001100 // No argument, push the A register onto the stack
+	POP  Instruction = 0b00001101 // No argument, pop the top of the stack into the A register
+	CALL Instruction = 0b00001110 // Single argument, push the program counter onto the stack and jump to address $0
+	RET  Instruction = 0b00001111 // No argument, pop the top of the stack and jump to that address
+	MOVa Instruction = 0b00010000 // No arguments, move B into A
+	MOVb Instruction = 0b00010001 // No arguments, move A into B
 	RST  Instruction = 0b00011101 // Reset the CPU
 	OUT  Instruction = 0b00011110 // No argument, display the value stored in register A
 	HLT  Instruction = 0b00011111 // No argument, halt the CPU
@@ -125,8 +129,8 @@ func main() {
 			{MPCRst},
 		},
 		JMP: {
-			{LdFlags, PCOut, LdMAddr},
-			{PCLd, MEn},
+			{PCOut, LdMAddr},
+			{PCLd, MEn, PCEnable},
 			{MPCRst},
 		},
 		JZ: {
@@ -144,6 +148,31 @@ func main() {
 			{PCLd, PCLdIfGorEq, MEn, PCEnable},
 			{MPCRst},
 		},
+		PUSH: {
+			{StkEn, LdMAddr},
+			{MWr, EnA},
+			{StkEn, StkLd, StkDec},
+			{MPCRst},
+		},
+		POP: {
+			{StkEn, StkInc, StkLd, LdMAddr},
+			{LdA, MEn},
+			{MPCRst},
+		},
+		CALL: {
+			{StkEn, LdMAddr},
+			{PCOut, MWr},
+			{StkEn, StkLd, StkDec},
+			{PCOut, LdMAddr},
+			{PCLd, MEn, PCEnable},
+			{MPCRst},
+		},
+		RET: {
+			{StkEn, StkInc, StkLd, LdMAddr},
+			{PCLd, MEn},
+			{PCEnable},
+			{MPCRst},
+		},
 		MOVa: {
 			{LdA, EnB},
 			{MPCRst},
@@ -153,7 +182,7 @@ func main() {
 			{MPCRst},
 		},
 		RST: {
-			{EnGnd, PCLd, LdInst, LdA, LdB, LdOut, LdMAddr},
+			{EnGnd, PCLd, LdInst, LdA, LdB, LdOut, LdMAddr, StkRst},
 			{RstDone},
 		},
 		OUT: {

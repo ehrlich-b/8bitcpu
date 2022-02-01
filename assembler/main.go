@@ -25,6 +25,12 @@ const (
 	JZ   Instruction = 0b00001001 // Single argument, jump to address $0 if register A = 0
 	JEQ  Instruction = 0b00001010 // Single argument, jump to address $0 if register A = B
 	JGE  Instruction = 0b00001011 // Single argument, jump to address $0 if register A >= B
+	PUSH Instruction = 0b00001100 // No argument, push the A register onto the stack
+	POP  Instruction = 0b00001101 // No argument, pop the top of the stack into the A register
+	CALL Instruction = 0b00001110 // Single argument, push the program counter onto the stack and jump to address $0
+	RET  Instruction = 0b00001111 // No argument, pop the top of the stack and jump to that address
+	MOVa Instruction = 0b00010000 // No arguments, move B into A
+	MOVb Instruction = 0b00010001 // No arguments, move A into B
 	OUT  Instruction = 0b00011110 // No argument, display the value stored in register A
 	HLT  Instruction = 0b00011111 // No argument, halt the CPU
 )
@@ -45,6 +51,12 @@ var instructionMap = map[string]Instruction{
 	"JGE":  JGE,
 	"OUT":  OUT,
 	"HLT":  HLT,
+	"MOVa": MOVa,
+	"MOVb": MOVb,
+	"PUSH": PUSH,
+	"POP":  POP,
+	"CALL": CALL,
+	"RET":  RET,
 }
 
 func main() {
@@ -52,7 +64,7 @@ func main() {
 	args := os.Args
 	var program string
 	if len(args) < 2 {
-		program = "./programs/fib.asm"
+		program = "./programs/callret.asm"
 	} else {
 		program = os.Args[2]
 	}
@@ -89,6 +101,9 @@ func writeInstructions(program [][]string, labels map[string]int8) ([]Instructio
 	instructions := make([]Instruction, 0)
 nextLine:
 	for lineIx, progLine := range program {
+		if len(progLine) == 0 {
+			continue
+		}
 		for instrIx, instr := range progLine {
 			// Skip labels
 			if strings.HasSuffix(instr, ":") {
@@ -127,6 +142,9 @@ func setupLabels(program [][]string) (map[string]int8, error) {
 	labels := make(map[string]int8, 0)
 	var memoryCounter int8
 	for lineIx, progLine := range program {
+		if len(progLine) == 0 {
+			continue
+		}
 		for _, instr := range progLine {
 			if strings.HasSuffix(instr, ":") {
 				label := strings.TrimRight(instr, ":")
@@ -149,9 +167,7 @@ func cleanInput(rawContent string) [][]string {
 	for _, line := range rawLines {
 		line = strings.Split(line, "//")[0]
 		tokens := strings.Fields(strings.TrimSpace(line))
-		if len(tokens) > 0 {
-			cleanInput = append(cleanInput, tokens)
-		}
+		cleanInput = append(cleanInput, tokens)
 	}
 	return cleanInput
 }
