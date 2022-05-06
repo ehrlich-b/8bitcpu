@@ -20,7 +20,7 @@
         </entry>
         <entry>
           <string>lastDataFile</string>
-          <file>C:\Users\behrlich\Desktop\Digital\microcode\rom.hex</file>
+          <file>{{Your Digital installation location}}\microcode\rom.hex</file>
         </entry>
         <entry>
           <string>autoReload</string>

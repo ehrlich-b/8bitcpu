@@ -11,3 +11,6 @@ lib/
 ReleaseNotes.txt
 Version.txt
 Windows_Read.me
+!exports/*.svg
+custom_components/CPU.dig
+custom_components/control_logic.dig
