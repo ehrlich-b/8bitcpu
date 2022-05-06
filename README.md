@@ -15,7 +15,7 @@ This is an 8 bit CPU, loosely based on [Ben Eater's](https://eater.net/8bit) 8 b
 
 # Programming the CPU
 
-This CPU use an extra compact instruction set, all instructions have either 0 or 1 parameters.
+This CPU use an extra compact instruction set, all instructions have either 0 or 1 parameters. Some examples can be found in `./assembler/programs`.
 
 ## Syntax
 
