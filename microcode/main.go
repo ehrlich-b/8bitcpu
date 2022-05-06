@@ -86,7 +86,6 @@ var preamble = [][]ControlLine{
 
 func main() {
 	rom := make([][]ControlLine, int(math.Pow(2, float64(addressBits))))
-	// TODO Implement microcode PC reset
 	instructions := map[Instruction][][]ControlLine{
 		NOP: {
 			{PCEnable},
